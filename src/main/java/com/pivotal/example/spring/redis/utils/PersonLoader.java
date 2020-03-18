@@ -17,15 +17,16 @@ public class PersonLoader {
 
     private final ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
     private final ReactiveRedisOperations<String, Person> personReactiveRedisOperations;
+    private final UUIDGenerator uuidGenerator;
 
     @PostConstruct
     public void loadData() {
-        List<Person> persons = Arrays.asList(new Person("1", "Person_1", "person1@test.com"),
-                new Person("2", "Person_2", "person2@test.com"), new Person("3", "Person_3", "person3@test.com"));
+        List<Person> persons = Arrays.asList(new Person("Person_1", "person1@test.com"),
+                new Person("Person_2", "person2@test.com"), new Person("Person_3", "person3@test.com"));
 
         reactiveRedisConnectionFactory.getReactiveConnection().serverCommands().flushAll().thenMany(
                 Flux.fromStream(persons.stream())
-                        .flatMap(person -> personReactiveRedisOperations.opsForValue().set(person.getId(), person)))
+                        .flatMap(person -> personReactiveRedisOperations.opsForValue().set(uuidGenerator.generateRandomId(), person)))
                 .thenMany(personReactiveRedisOperations.keys("*")
                         .flatMap(personReactiveRedisOperations.opsForValue()::get))
                 .subscribe(System.out::println);

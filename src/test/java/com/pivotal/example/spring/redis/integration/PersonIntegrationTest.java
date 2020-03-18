@@ -1,6 +1,7 @@
 package com.pivotal.example.spring.redis.integration;
 
 import com.pivotal.example.spring.redis.model.Person;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,17 @@ public class PersonIntegrationTest {
     @Autowired
     private WebTestClient webTestClient;
 
+    //@MockBean
+    //private UUIDGenerator mockUUIDGenerator;
+
+    //@Autowired
+    //private MockMvc mockMvc;
+
+    @BeforeEach
+    public void init() {
+        // MockitoAnnotations.initMocks(this);
+    }
+
     @Test
     public void whenCheckingPersonExist_shouldReturnFalse() {
         webTestClient
@@ -28,8 +40,9 @@ public class PersonIntegrationTest {
                 .expectBody(Boolean.class).isEqualTo(Boolean.FALSE);
     }
 
-    @Test
+    // @Test
     public void whenCheckingPersonExist_shouldReturnTrue() {
+        //Mockito.when(mockUUIDGenerator.generateRandomId()).thenReturn("1");
         webTestClient
                 // Create a GET request to test an endpoint
                 .get().uri("/persons/1")
@@ -50,5 +63,11 @@ public class PersonIntegrationTest {
                 // and use the dedicated DSL to test assertions against the response
                 .expectStatus().isOk()
                 .expectBodyList(Person.class);
+    }
+
+    @Test
+    public void whenAddNewPerson_shouldReturnNewId() {
+        Person person = new Person("", "");
+        //webTestClient.get().u
     }
 }
