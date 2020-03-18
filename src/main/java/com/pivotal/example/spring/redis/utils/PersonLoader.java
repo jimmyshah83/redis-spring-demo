@@ -8,23 +8,26 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 import javax.annotation.PostConstruct;
-import java.util.UUID;
+import java.util.Arrays;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Component
 public class PersonLoader {
 
-    private final ReactiveRedisConnectionFactory factory;
-    private final ReactiveRedisOperations<String, Person> personOps;
+    private final ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
+    private final ReactiveRedisOperations<String, Person> personReactiveRedisOperations;
 
     @PostConstruct
     public void loadData() {
-        factory.getReactiveConnection().serverCommands().flushAll().thenMany(
-                Flux.just("Person_1", "Person_1", "Person_1")
-                        .map(name -> new Person(UUID.randomUUID().toString(), name, "test@test.com"))
-                        .flatMap(person -> personOps.opsForValue().set(person.getId(), person)))
-                .thenMany(personOps.keys("*")
-                        .flatMap(personOps.opsForValue()::get))
+        List<Person> persons = Arrays.asList(new Person("1", "Person_1", "person1@test.com"),
+                new Person("2", "Person_2", "person2@test.com"), new Person("3", "Person_3", "person3@test.com"));
+
+        reactiveRedisConnectionFactory.getReactiveConnection().serverCommands().flushAll().thenMany(
+                Flux.fromStream(persons.stream())
+                        .flatMap(person -> personReactiveRedisOperations.opsForValue().set(person.getId(), person)))
+                .thenMany(personReactiveRedisOperations.keys("*")
+                        .flatMap(personReactiveRedisOperations.opsForValue()::get))
                 .subscribe(System.out::println);
     }
 }
