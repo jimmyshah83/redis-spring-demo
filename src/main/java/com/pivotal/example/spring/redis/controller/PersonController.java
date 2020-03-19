@@ -18,7 +18,7 @@ public class PersonController {
         return personService.getAllPersons();
     }
 
-    @GetMapping("/persons/{id}")
+    @GetMapping("/persons/contains/{id}")
     public Mono<Boolean> doesPersonExistById(@PathVariable String id) {
         return personService.doesPersonExistById(id);
     }
@@ -26,5 +26,10 @@ public class PersonController {
     @PostMapping("/persons/add")
     public Mono<String> addPerson(@RequestBody Person person) {
         return personService.addPerson(person);
+    }
+
+    @GetMapping("/persons/{id}")
+    public Mono<Person> findPersonById(@PathVariable String id) {
+        return personService.getPersonById(id);
     }
 }

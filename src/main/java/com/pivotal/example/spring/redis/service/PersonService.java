@@ -27,7 +27,11 @@ public class PersonService {
 
     public Mono<String> addPerson(@RequestBody Person person) {
         String uniqueId = uuidGenerator.generateRandomId();
-        personReactiveRedisOperations.opsForValue().set(uniqueId, person);
-        return Mono.just(uniqueId);
+        return personReactiveRedisOperations.opsForValue().set(uniqueId, person)
+                .thenReturn(uniqueId);
+    }
+
+    public Mono<Person> getPersonById(String id) {
+        return personReactiveRedisOperations.opsForValue().get(id);
     }
 }
