@@ -17,6 +17,7 @@ public class SecurityConfig {
                 .and().authorizeExchange()
                 .pathMatchers("/persons").permitAll()
                 .pathMatchers("/persons/*").permitAll()
+                .pathMatchers("/persons/contains/*").permitAll()
                 .and().build();
     }
 }

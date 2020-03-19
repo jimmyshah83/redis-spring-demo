@@ -25,10 +25,8 @@ public class PersonService {
         return personReactiveRedisOperations.hasKey(id);
     }
 
-    public Mono<String> addPerson(@RequestBody Person person) {
-        String uniqueId = uuidGenerator.generateRandomId();
-        return personReactiveRedisOperations.opsForValue().set(uniqueId, person)
-                .thenReturn(uniqueId);
+    public Mono<Boolean> addPerson(@RequestBody Person person) {
+        return personReactiveRedisOperations.opsForValue().set(uuidGenerator.generateRandomId(), person);
     }
 
     public Mono<Person> getPersonById(String id) {

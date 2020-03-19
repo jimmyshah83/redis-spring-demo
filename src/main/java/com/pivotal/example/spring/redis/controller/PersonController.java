@@ -23,8 +23,8 @@ public class PersonController {
         return personService.doesPersonExistById(id);
     }
 
-    @PostMapping("/persons/add")
-    public Mono<String> addPerson(@RequestBody Person person) {
+    @PostMapping(value = "/persons/add")
+    public Mono<Boolean> addPerson(@RequestBody Person person) {
         return personService.addPerson(person);
     }
 

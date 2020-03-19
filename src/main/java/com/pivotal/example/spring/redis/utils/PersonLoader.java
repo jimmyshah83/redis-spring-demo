@@ -21,12 +21,13 @@ public class PersonLoader {
 
     @PostConstruct
     public void loadData() {
-        List<Person> persons = Arrays.asList(new Person("Person_1", "person1@test.com"),
-                new Person("Person_2", "person2@test.com"), new Person("Person_3", "person3@test.com"));
+        List<Person> persons = Arrays.asList(new Person(uuidGenerator.generateRandomId(), "Person_1", "person1@test.com"),
+                new Person(uuidGenerator.generateRandomId(), "Person_2", "person2@test.com"),
+                new Person(uuidGenerator.generateRandomId(), "Person_3", "person3@test.com"));
 
         reactiveRedisConnectionFactory.getReactiveConnection().serverCommands().flushAll().thenMany(
                 Flux.fromStream(persons.stream())
-                        .flatMap(person -> personReactiveRedisOperations.opsForValue().set(uuidGenerator.generateRandomId(), person)))
+                        .flatMap(person -> personReactiveRedisOperations.opsForValue().set(person.getId(), person)))
                 .thenMany(personReactiveRedisOperations.keys("*")
                         .flatMap(personReactiveRedisOperations.opsForValue()::get))
                 .subscribe(System.out::println);

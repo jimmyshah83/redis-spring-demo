@@ -33,7 +33,7 @@ public class PersonServiceTest {
         MockitoAnnotations.initMocks(this);
         personService = new PersonService(mockPersonReactiveRedisOperations, mockUUIDGenerator);
         Mockito.when(mockPersonReactiveRedisOperations.opsForValue()).thenReturn(valueOperations);
-        person = new Person("test1", "test1@test.com");
+        person = new Person("1", "test1", "test1@test.com");
     }
 
     @Test
@@ -71,12 +71,11 @@ public class PersonServiceTest {
                 .expectComplete();
     }
 
-    //@Test
+    @Test
     public void testAddPerson() {
         Mockito.when(uuidGenerator.generateRandomId()).thenReturn("1");
         Mockito.when(mockPersonReactiveRedisOperations.opsForValue().set("1", person)).thenReturn(Mono.just(Boolean.TRUE));
         StepVerifier.create(personService.addPerson(person))
-                .expectNext("1")
                 .expectComplete();
     }
 }

@@ -1,38 +1,32 @@
 package com.pivotal.example.spring.redis.integration;
 
 import com.pivotal.example.spring.redis.model.Person;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest
+@AutoConfigureWebTestClient
 public class PersonIntegrationTest {
 
     @Autowired
     private WebTestClient webTestClient;
 
-    //@MockBean
-    //private UUIDGenerator mockUUIDGenerator;
-
-    //@Autowired
-    //private MockMvc mockMvc;
-
-    @BeforeEach
-    public void init() {
-        // MockitoAnnotations.initMocks(this);
-    }
-
     @Test
-    public void whenCheckingPersonExist_shouldReturnFalse() {
+    public void whenCheckingIfPersonExist_shouldReturnFalse() {
         webTestClient
                 // Create a GET request to test an endpoint
-                .get().uri("/persons/4")
+                .get().uri("/persons/contains/4")
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 // and use the dedicated DSL to test assertions against the response
@@ -40,21 +34,8 @@ public class PersonIntegrationTest {
                 .expectBody(Boolean.class).isEqualTo(Boolean.FALSE);
     }
 
-    // @Test
-    public void whenCheckingPersonExist_shouldReturnTrue() {
-        //Mockito.when(mockUUIDGenerator.generateRandomId()).thenReturn("1");
-        webTestClient
-                // Create a GET request to test an endpoint
-                .get().uri("/persons/1")
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                // and use the dedicated DSL to test assertions against the response
-                .expectStatus().isOk()
-                .expectBody(Boolean.class).isEqualTo(Boolean.TRUE);
-    }
-
     @Test
-    public void whenCheckingAllPersons_shouldReturnAllPersons() {
+    public void whenCheckingAllPersons_shouldReturnCorrectCount() {
         webTestClient
                 // Create a GET request to test an endpoint
                 .get().uri("/persons")
@@ -62,12 +43,47 @@ public class PersonIntegrationTest {
                 .exchange()
                 // and use the dedicated DSL to test assertions against the response
                 .expectStatus().isOk()
-                .expectBodyList(Person.class);
+                .expectBodyList(Person.class)
+                .consumeWith(result -> {
+                    List<Person> persons = result.getResponseBody();
+                    assertThat(persons.size() == 3);
+                });
     }
 
     @Test
-    public void whenAddNewPerson_shouldReturnNewId() {
-        Person person = new Person("", "");
-        //webTestClient.get().u
+    public void whenCheckingPersonById_shouldReturnPerson() {
+        List<String> ids = new ArrayList<>();
+        webTestClient
+                // Create a GET request to test an endpoint
+                .get().uri("/persons")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                // and use the dedicated DSL to test assertions against the response
+                .expectStatus().isOk()
+                .expectBodyList(Person.class)
+                .consumeWith(result -> result.getResponseBody().stream().forEach(person -> ids.add(person.getId())));
+
+        webTestClient
+                // Create a GET request to test an endpoint
+                .get().uri("/persons/" + ids.get(0))
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                // and use the dedicated DSL to test assertions against the response
+                .expectStatus().isOk()
+                .expectBody(Person.class)
+                .consumeWith(result -> {
+                    assertThat(StringUtils.equalsIgnoreCase(result.getResponseBody().getId(), ids.get(0)) == true);
+                });
+    }
+
+    @Test
+    public void addingPerson_shouldSucceed() {
+        webTestClient
+                // Create a GET request to test an endpoint
+                .post().uri("/persons/add")
+                .body(Mono.just(new Person("1", "test4", "test4@test.com")), Person.class)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk();
     }
 }
