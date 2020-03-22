@@ -26,7 +26,8 @@ public class PersonService {
     }
 
     public Mono<Boolean> addPerson(@RequestBody Person person) {
-        return personReactiveRedisOperations.opsForValue().set(uuidGenerator.generateRandomId(), person);
+        person.setId(uuidGenerator.generateRandomId());
+        return personReactiveRedisOperations.opsForValue().set(person.getId(), person);
     }
 
     public Mono<Person> getPersonById(String id) {

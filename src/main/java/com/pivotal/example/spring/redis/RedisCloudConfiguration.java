@@ -4,6 +4,7 @@ import com.pivotal.example.spring.redis.model.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -14,7 +15,8 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import javax.annotation.PreDestroy;
 
 @Configuration
-public class RedisConfiguration {
+@Profile("cloud")
+public class RedisCloudConfiguration {
 
     @Autowired
     private RedisConnectionFactory factory;
